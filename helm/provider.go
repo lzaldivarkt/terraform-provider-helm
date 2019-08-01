@@ -290,7 +290,7 @@ func (m *Meta) buildK8sClient(d *schema.ResourceData) error {
 	if err != nil {
 		debug("could not get Kubernetes config: %s", err)
 		if !hasStatic {
-			return err
+			return fmt.Errorf("could not get Kubernetes config: %s", err)
 		}
 	}
 
@@ -298,7 +298,7 @@ func (m *Meta) buildK8sClient(d *schema.ResourceData) error {
 	if err != nil {
 		debug("could not get Kubernetes client config: %s", err)
 		if !hasStatic {
-			return err
+			return fmt.Errorf("could not get Kubernetes client config: %s", err)
 		}
 	}
 
@@ -393,7 +393,7 @@ func getK8sConfig(d *schema.ResourceData) (clientcmd.ClientConfig, error) {
 // GetHelmClient will return a new Helm client
 func (m *Meta) GetHelmClient() (helm.Interface, error) {
 	if err := m.initialize(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error initalizing client %s", err)
 	}
 
 	return m.buildHelmClient(), nil
@@ -404,13 +404,12 @@ func (m *Meta) initialize() error {
 	defer m.Unlock()
 
 	if err := m.installTillerIfNeeded(m.data); err != nil {
-		return err
+		return fmt.Errorf("Failed installing tiller during initalize %s", err)
 	}
 
 	if err := m.buildTunnel(m.data); err != nil {
-		return err
+		return fmt.Errorf("Failed building tunnel during initalize %s", err)
 	}
-
 	return nil
 }
 
@@ -463,7 +462,7 @@ func (m *Meta) installTillerIfNeeded(d *schema.ResourceData) error {
 	}
 
 	if err := m.waitForTiller(o); err != nil {
-		return err
+		return fmt.Errorf("Failed waiting for tiller %s", err)
 	}
 
 	debug("Tiller has been installed into your Kubernetes Cluster.")
@@ -492,7 +491,12 @@ func (m *Meta) waitForTiller(o *installer.Options) error {
 	}
 
 	_, err := stateConf.WaitForState()
-	return err
+
+	if err != nil {
+		return fmt.Errorf("Failed Waiting for Tiller State %s", err)
+	}
+
+	return nil
 }
 
 func (m *Meta) buildTunnel(d *schema.ResourceData) error {
@@ -504,7 +508,7 @@ func (m *Meta) buildTunnel(d *schema.ResourceData) error {
 	o := &installer.Options{}
 	o.Namespace = m.Settings.TillerNamespace
 	if err := m.waitForTiller(o); err != nil {
-		return err
+		return fmt.Errorf("Failed waiting for tiller %s", err)
 	}
 
 	var err error
@@ -540,11 +544,11 @@ func (m *Meta) buildTLSConfig(d *schema.ResourceData) error {
 
 	keyPEMBlock, err := getContent(d, "client_key", clientKeyDefault)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed getting client_key contents %s", err)
 	}
 	certPEMBlock, err := getContent(d, "client_certificate", clientCertDefault)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed getting client_certificate contents %s", err)
 	}
 	if len(keyPEMBlock) == 0 && len(certPEMBlock) == 0 {
 		return nil
@@ -563,7 +567,7 @@ func (m *Meta) buildTLSConfig(d *schema.ResourceData) error {
 
 	caPEMBlock, err := getContent(d, "ca_certificate", caCertDefault)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed getting ca_certificate contents %s", err)
 	}
 
 	if !cfg.InsecureSkipVerify && len(caPEMBlock) != 0 {
