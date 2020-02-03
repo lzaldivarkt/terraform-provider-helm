@@ -38,3 +38,5 @@ replace (
 )
 
 replace github.com/terraform-providers/terraform-provider-helm => github.com/lzaldivarkt/terraform-provider-helm v0.6.1-0.20200117171837-0ab4bd2cbe77
+
+replace github.com/terraform-providers/terraform-provider-helm/helm => github.com/lzaldivarkt/terraform-provider-helm/helm dev-v3
