@@ -37,6 +37,4 @@ replace (
 	k8s.io/kubectl => k8s.io/kubectl v0.0.0-20191016120415-2ed914427d51
 )
 
-replace github.com/terraform-providers/terraform-provider-helm => github.com/lzaldivarkt/terraform-provider-helm v0.6.1-0.20200117171837-0ab4bd2cbe77
-
-replace github.com/terraform-providers/terraform-provider-helm/helm => github.com/lzaldivarkt/terraform-provider-helm/helm dev-v3
+replace github.com/terraform-providers/terraform-provider-helm => github.com/lzaldivarkt/terraform-provider-helm dev-v3
